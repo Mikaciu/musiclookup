@@ -7,9 +7,10 @@ def get_all_releases_from_artist(s_artist_id):
     limit = 100
     offset = 0
     page = 1
-    d_search_parameters = dict(artist=s_artist_id, release_type=["album"])
+    # d_search_parameters = dict(artist=s_artist_id, release_type=["album"])
+    d_search_parameters = dict(artist=s_artist_id, limit=limit)
 
-    first_page = musicbrainzngs.browse_releases(limit=None, **d_search_parameters)
+    first_page = musicbrainzngs.browse_releases(**d_search_parameters)
     page_releases = first_page['release-list']
 
     yield from ({"title": albums["title"], "date": albums["date"]} for albums in page_releases)
@@ -18,9 +19,10 @@ def get_all_releases_from_artist(s_artist_id):
         offset += limit
         page += 1
         print("fetching page number %d.." % page)
-        next_page = musicbrainzngs.browse_releases(limit=limit, offset=offset, **d_search_parameters)
+        next_page = musicbrainzngs.browse_releases(offset=offset, **d_search_parameters)
         page_releases = next_page['release-list']
-        yield from ({"title": albums["title"], "date": albums["date"]} for albums in page_releases)
+        yield from ({"title": albums["title"], "date": albums["date"]} for albums in page_releases if
+                    "date" in albums and "title" in albums)
 
 
 result = musicbrainzngs.search_artists(artist="aerosmith", type="group", strict=True)
